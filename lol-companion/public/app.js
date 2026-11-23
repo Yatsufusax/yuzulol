@@ -63,26 +63,75 @@ function pair() {
 }
 function waiting() { return `<div class="center" style="margin-top:30vh"><h1>Abre el cliente de LoL</h1><p class="mut">Esperando conexión con el cliente en tu PC…</p></div>`; }
 
+const lastQ = () => +localStorage.getItem('lastQ') || 480;
+const ICO = {
+  home: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
+  runes: '<path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4z"/><path d="M4 16a4 4 0 0 1 4-4h12"/>',
+  friends: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.6 0 4.5 1.8 4.5 4.5"/>',
+  settings: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
+};
+const svg = (k) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg>`;
+// Barra inferior (solo en las pantallas del menú, no durante lobby, selección o partida)
+function bnav(cur) {
+  const it = [['home', 'Inicio'], ['runes', 'Runas'], ['friends', 'Amigos'], ['settings', 'Ajustes']];
+  return `<nav class="bnav">${it.map(([k, n]) => `<button class="${k === cur ? 'on' : ''}" data-act="go" data-arg="${k}">${svg(k)}<span>${n}</span></button>`).join('')}</nav>`;
+}
+// Campeón más jugado de tu historial reciente → su splash art de cabecera
+function topChamp() {
+  const n = {}; for (const g of S.history || []) n[g.champ] = (n[g.champ] || 0) + 1;
+  const id = Object.entries(n).sort((x, y) => y[1] - x[1])[0]?.[0];
+  return id && champ(+id) ? champ(+id).id : null;
+}
 function home() {
-  const me = S.summoner, rk = S.ranked;
-  const hist = (S.history || []).map((g) => `<div class="hist ${g.win ? 'win' : ''} row" data-act="match" data-arg="${g.id}" style="cursor:pointer">${cico(g.champ).replace('<img', '<img class="ic"')}
+  const me = S.summoner, rk = S.ranked, hist = S.history || [];
+  const tc = topChamp(), ranked = rk && rk.tier;
+  const w = rk?.wins ?? 0, l = rk?.losses ?? 0, wr = w + l ? Math.round((100 * w) / (w + l)) : 0;
+  const lp = Math.max(0, Math.min(100, rk?.leaguePoints ?? 0));
+  const dots = hist.slice(0, 10).map((g) => `<i class="dot ${g.win ? 'w' : 'l'}"></i>`).join('');
+  const rows = hist.map((g) => `<div class="hist ${g.win ? 'win' : ''} row" data-act="match" data-arg="${g.id}" style="cursor:pointer">${cico(g.champ).replace('<img', '<img class="ic"')}
     <div class="grow"><b class="${g.win ? 'w' : 'l'}" style="font-size:12px">${g.win ? 'VICTORIA' : 'DERROTA'}</b><div style="font-weight:600">${g.k} / ${g.d} / ${g.a}</div>
     <div class="mut">KDA ${((g.k + g.a) / Math.max(1, g.d)).toFixed(2)} · ${g.cs} CS</div></div><div style="text-align:right"><div class="mut">${fmt(g.dur)}</div><div class="pi" style="margin-top:4px">${(g.items || []).slice(0, 6).map((id) => (id ? `<img src="${CDN}${dd.ver}/img/item/${id}.png" alt="">` : '<i></i>')).join('')}</div></div></div>`).join('');
-  return `<div class="row">${me && dd.ver ? `<img class="avatar" src="${CDN}${dd.ver}/img/profileicon/${me.icon}.png" alt="">` : '<i class="avatar"></i>'}
-    <div class="grow"><div style="font-weight:600;font-size:17px">${esc(me?.name || '…')}</div><div class="mut">Nivel ${me?.level ?? '–'}</div></div>
-    <button class="tag" data-act="go" data-arg="runes">Runas</button><button class="tag" data-act="unpair">Salir</button></div>
-  <div class="center"><button class="start" data-act="go" data-arg="modes" aria-label="Elegir modo"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0A1428" stroke-width="2" stroke-linejoin="round"><path d="M13 3L5 14h6l-1 7 8-11h-6z"/></svg></button><h2>INICIAR</h2></div>
-  <h2>CLASIFICATORIA</h2>
-  <div class="card row"><div class="grow"><div class="mut">Solo/Dúo</div><div style="font-family:Cinzel,serif;font-size:22px;color:var(--gold)">${rk && rk.tier ? esc(rk.tier) + ' ' + esc(rk.division) : 'Sin rango'}</div><b>${rk?.leaguePoints ?? 0} LP</b></div>
-    <div class="mut" style="text-align:right"><span style="color:var(--teal)">${rk?.wins ?? 0} V</span> · <span style="color:var(--red)">${rk?.losses ?? 0} D</span><br>Win rate ${rk && rk.wins + rk.losses ? Math.round((100 * rk.wins) / (rk.wins + rk.losses)) : 0}%</div></div>
-  <h2>HISTORIAL</h2>${hist || '<p class="mut">Sin partidas recientes.</p>'}`;
+  const art = tc ? `,url(${CDN.replace('cdn/', 'cdn/img/champion/splash/')}${tc}_0.jpg)` : '';
+  return `<div class="hm-hero" style="background-image:linear-gradient(180deg,rgba(10,20,40,.15) 0%,rgba(10,20,40,.55) 55%,var(--bg) 100%)${art}">
+      <span class="hm-st"><i></i>Cliente conectado</span></div>
+    <div class="hm-me row">${me && dd.ver ? `<img class="hm-av" src="${CDN}${dd.ver}/img/profileicon/${me.icon}.png" alt="">` : '<i class="hm-av"></i>'}
+      <div class="grow"><div class="hm-name">${esc(me?.name || '…')}</div><div class="mut">Nivel ${me?.level ?? '–'}${ranked ? ' · ' + esc(rk.tier) + ' ' + esc(rk.division) : ''}</div></div></div>
+    <div><button class="hm-play" data-act="play" aria-label="Jugar"><b>JUGAR</b><span>${esc(QNAME[lastQ()] || 'Partida')}</span></button>
+      <button class="hm-chg" data-act="go" data-arg="modes">Cambiar modo ›</button></div>
+    <div class="card">
+      <div class="row"><span class="mut grow">Clasificatoria Solo/Dúo</span><b>${ranked ? lp + ' / 100 LP' : 'Sin rango'}</b></div>
+      ${ranked ? `<div class="hm-bar"><i style="width:${lp}%"></i></div>` : ''}
+      <div class="row" style="margin-top:12px">
+        <svg width="56" height="56" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="21" fill="none" stroke="#1E2D4A" stroke-width="6"/><circle cx="26" cy="26" r="21" fill="none" stroke="#C8AA6E" stroke-width="6" stroke-dasharray="${(wr * 1.32).toFixed(1)} 132" transform="rotate(-90 26 26)"/><text x="26" y="30" text-anchor="middle" font-size="12" font-weight="600" fill="#F0E6D2">${wr}%</text></svg>
+        <div><b>${wr}% de victorias</b><div class="mut"><span style="color:var(--teal)">${w} V</span> · <span style="color:var(--red)">${l} D</span></div></div></div>
+      ${dots ? `<div class="mut" style="margin-top:12px">Últimas ${hist.slice(0, 10).length} partidas</div><div class="hm-dots">${dots}</div>` : ''}
+    </div>
+    <h2>HISTORIAL</h2>${rows || '<p class="mut">Sin partidas recientes.</p>'}
+    ${bnav('home')}`;
+}
+
+function friendsView() {
+  const L = ui.fl;
+  return `<h1>Amigos conectados</h1><p class="mut">Toca «Invitar» para crear una sala (${esc(QNAME[lastQ()] || 'Partida')}) e invitarlo.</p>
+  ${L === null || L === undefined ? '<p class="mut">Cargando…</p>' : L.length ? L.map((f) => `<div class="card row">${dd.ver && f.icon != null ? `<img class="avatar" style="width:40px;height:40px" src="${CDN}${dd.ver}/img/profileicon/${f.icon}.png" alt="">` : '<i class="avatar" style="width:40px;height:40px"></i>'}
+    <div class="grow"><b>${esc(f.name)}</b><div class="mut">${esc({ chat: 'Disponible', away: 'Ausente', dnd: 'En partida', mobile: 'En el móvil' }[f.status] || f.status)}</div></div>
+    <button class="tag" data-act="invfriend" data-arg="${f.id}">Invitar</button></div>`).join('') : '<p class="mut">No hay amigos conectados ahora.</p>'}
+  ${bnav('friends')}`;
+}
+function settingsView() {
+  return `<h1>Ajustes</h1>
+  <div class="card"><h2>CONEXIÓN</h2><div class="row" style="margin-top:10px"><span class="mut grow">PC</span><b>${esc(location.host)}</b></div>
+    <div class="row" style="margin-top:8px"><span class="mut grow">Cliente de LoL</span><b style="color:${S.connected ? 'var(--teal)' : 'var(--red)'}">${S.connected ? 'Conectado' : 'Desconectado'}</b></div></div>
+  <div class="card"><h2>VINCULACIÓN</h2><p class="mut" style="margin:8px 0 12px">Si desvinculas este móvil, tendrás que escanear el QR del PC otra vez.</p>
+    <button class="btn ghost" style="border-color:var(--red);color:var(--red)" data-act="askunpair">Desvincular este móvil</button></div>
+  ${bnav('settings')}`;
 }
 
 function modes() {
   const m = MODES[ui.mode];
   return `<div class="row"><button class="tag" data-act="go" data-arg="home">←</button><h1>Elige tu modo</h1></div>
   <div class="modes">${Object.entries(MODES).map(([k, v]) => `<button class="mode ${k === ui.mode ? 'on' : ''}" data-act="mode" data-arg="${k}"
-    style="--bg1:url(img/${v.img.replace('.svg', '.jpg')}),url(img/${v.img})">${mapIcon(v.map, 'memb')}<i class="chk">${k === ui.mode ? '✓' : ''}</i><b>${v.name}</b><span>${v.desc}</span></button>`).join('')}</div>
+    style="--bg1:url(img/${v.img.replace('.svg', '.jpg')}?v=2);--bg2:url(img/${v.img})">${mapIcon(v.map, 'memb')}<i class="chk">${k === ui.mode ? '✓' : ''}</i><b>${v.name}</b><span>${v.desc}</span></button>`).join('')}</div>
   <h2>OPCIONES DE COLA</h2>${m.list.map(([id, n, d]) => `<button class="qrow" data-act="queue" data-arg="${id}"><span><b>${n}</b><span class="mut">${d}</span></span><span style="color:var(--gold)">›</span></button>`).join('')}`;
 }
 
@@ -245,7 +294,8 @@ function runes() {
   return `<div class="row"><button class="tag" data-act="go" data-arg="home">←</button><h1>Páginas de runas</h1></div>
   <p class="mut">Toca una para usarla en el cliente.</p>
   ${(S.perks || []).filter((p) => p.isValid).map((p) => `<button class="perk ${p.current ? 'on' : ''}" data-act="page" data-arg="${p.id}">
-    ${rune(dd.perkIcon[p.selectedPerkIds?.[0]])}<span class="grow"><b>${esc(p.name)}</b><br><span class="mut">${p.current ? 'En uso' : ''}</span></span>${rune(dd.styleIcon[p.subStyleId])}</button>`).join('') || '<p class="mut">No hay páginas.</p>'}`;
+    ${rune(dd.perkIcon[p.selectedPerkIds?.[0]])}<span class="grow"><b>${esc(p.name)}</b><br><span class="mut">${p.current ? 'En uso' : ''}</span></span>${rune(dd.styleIcon[p.subStyleId])}</button>`).join('') || '<p class="mut">No hay páginas.</p>'}
+  ${bnav('runes')}`;
 }
 
 // ---------- Render y eventos ----------
@@ -257,12 +307,12 @@ function view() {
   if (p === 'ReadyCheck') return ready();
   if (p === 'Matchmaking' || p === 'Lobby') return lobby();
   if (['InProgress', 'GameStart', 'Reconnect'].includes(p)) return ingame();
-  return ui.screen === 'modes' ? modes() : ui.screen === 'runes' ? runes() : ui.screen === 'match' ? matchView() : home();
+  return ui.screen === 'modes' ? modes() : ui.screen === 'runes' ? runes() : ui.screen === 'friends' ? friendsView() : ui.screen === 'settings' ? settingsView() : ui.screen === 'match' ? matchView() : home();
 }
 let rec = 0;
 function render() {
   const fid = document.activeElement?.id, keep = [...document.querySelectorAll('[data-sk]')].map((e) => [e.dataset.sk, e.scrollLeft]);
-  $('#app').innerHTML = view();
+  const html = view(); $('#app').innerHTML = html; $('#app').className = html.includes('class="bnav"') ? 'hasnav' : '';
   if (fid && $('#' + fid) && /^(q|ename)$/.test(fid)) { const el = $('#' + fid); el.focus(); el.setSelectionRange?.(999, 999); }
   for (const [k, x] of keep) { const el = document.querySelector(`[data-sk="${k}"]`); if (el) el.scrollLeft = x; }
   tick();
@@ -271,16 +321,23 @@ function render() {
 const tick = () => document.querySelectorAll('.tm').forEach((e) => { e.textContent = fmt(+e.dataset.base + e.dataset.dir * ((Date.now() - (+e.dataset.at || rec)) / 1000)); });
 setInterval(tick, 250);
 
+async function loadFriends() { ui.fl = null; render(); ui.fl = (await act('friends')) || []; if (ui.screen === 'friends') render(); }
 const H = {
   async match(a) {
     ui.screen = 'match'; ui.match = null; ui.matchId = +a; render();
     const m = await act('match', { gameId: +a });
     if (ui.matchId === +a) { ui.match = m || false; render(); }
   },
-  go: (a) => { ui.screen = a; render(); },
+  go: (a) => { ui.screen = a; render(); if (a === 'friends') loadFriends(); },
+  play: () => act('queue', { queueId: lastQ() }),
+  async invfriend(a) {
+    try { await actRaw('queue', { queueId: lastQ() }); await actRaw('invite', { summonerId: +a }); toast('Invitación enviada', true); }
+    catch (e) { toast(e.message); }
+  },
+  askunpair: () => { if (confirm('¿Desvincular este móvil? Tendrás que escanear el QR otra vez.')) H.unpair(); },
   mode: (a) => { ui.mode = a; render(); },
   role: (a) => { ui.role = a; render(); },
-  queue: (a) => act('queue', { queueId: +a }),
+  queue: (a) => { localStorage.setItem('lastQ', a); return act('queue', { queueId: +a }); },
   search: () => act('search'), cancel: () => act('cancel'), leave: () => act('leave'),
   accept: () => act('accept'), decline: () => act('decline'),
   swap: (a) => { const [kind, id, op] = a.split(':'); act('swap', { kind, id: +id, op }); },

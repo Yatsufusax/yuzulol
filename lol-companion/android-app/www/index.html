@@ -127,14 +127,33 @@ async function connect(text) {
 
 async function scan() {
   const BS = window.Capacitor?.Plugins?.BarcodeScanner;
+  $('err').textContent = '';
   if (!BS) { $('err').textContent = 'El escáner no está disponible. Usa la dirección a mano.'; return; }
   try {
-    const perm = await BS.requestPermissions();
-    if (perm.camera !== 'granted' && perm.camera !== 'limited') { $('err').textContent = 'Necesito permiso de cámara para escanear el QR.'; return; }
+    // Pide el permiso de cámara (sale el aviso de Android). Si lo negaste antes, no vuelve a salir: hay que activarlo en Ajustes.
+    let perm = await BS.checkPermissions();
+    if (perm.camera !== 'granted' && perm.camera !== 'limited') perm = await BS.requestPermissions();
+    if (perm.camera === 'denied') {
+      $('err').innerHTML = 'La cámara está bloqueada. Actívala en <b>Ajustes → Aplicaciones → YuzuLOL → Permisos</b>. <u id="opens">Abrir ajustes</u>';
+      $('opens').onclick = () => BS.openSettings();
+    }
+    // El escáner de Google se descarga solo la primera vez (necesita internet y Google Play)
+    try {
+      if (!(await BS.isGoogleBarcodeScannerModuleAvailable()).available) {
+        $('err').textContent = 'Preparando el escáner (solo la primera vez)…';
+        await BS.installGoogleBarcodeScannerModule();
+        for (let i = 0; i < 40 && !(await BS.isGoogleBarcodeScannerModuleAvailable()).available; i++) await new Promise((r) => setTimeout(r, 1500));
+        $('err').textContent = '';
+      }
+    } catch {}
     const { barcodes } = await BS.scan({ formats: ['QR_CODE'] });
     const v = barcodes?.[0]?.rawValue;
     if (v) await connect(v);
-  } catch (e) { $('err').textContent = 'No pude escanear: ' + (e?.message || e); }
+  } catch (e) {
+    const m = String(e?.message || e);
+    if (/cancel/i.test(m)) return;
+    if (!$('err').textContent) $('err').textContent = 'No pude escanear: ' + m + '. Prueba con «Escribir la dirección a mano».';
+  }
 }
 
 $('scan').onclick = scan;

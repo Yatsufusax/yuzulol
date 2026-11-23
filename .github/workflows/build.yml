@@ -40,6 +40,13 @@ jobs:
         run: |
           npm install
           npx cap add android
+          # Permiso de cámara (sin esto Android no muestra el aviso) y descarga automática del escáner de Google
+          MF=android/app/src/main/AndroidManifest.xml
+          grep -q 'android.permission.CAMERA' $MF || sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <application|' $MF
+          sed -i 's|</application>|    <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui" />\n    </application>|' $MF
+          # Icono de la app
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher*.xml
+          cp -r ../resources/res/. android/app/src/main/res/
           # El escáner de QR necesita Android 6 (API 23) como mínimo
           sed -i 's/minSdkVersion = 2[0-9]/minSdkVersion = 23/' android/variables.gradle
           npx cap sync android

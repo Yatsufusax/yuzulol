@@ -16,7 +16,7 @@
   #bg .l{position:absolute;inset:0;background-size:cover;background-position:center 20%;opacity:0;transition:opacity 2.2s ease;transform:scale(1.04);animation:drift 40s ease-in-out infinite alternate}
   #bg .l.on{opacity:1}
   @keyframes drift{from{transform:scale(1.04) translateX(0)}to{transform:scale(1.1) translateX(-1.5%)}}
-  .veil{position:fixed;inset:0;z-index:1;background:linear-gradient(90deg,rgba(5,11,22,.92) 0%,rgba(5,11,22,.62) 45%,rgba(5,11,22,.8) 100%),linear-gradient(180deg,rgba(5,11,22,.55),rgba(5,11,22,.9))}
+  .veil{position:fixed;inset:0;z-index:1;background:linear-gradient(90deg,rgba(5,11,22,.88) 0%,rgba(5,11,22,.38) 48%,rgba(5,11,22,.62) 100%),linear-gradient(180deg,rgba(5,11,22,.25),rgba(5,11,22,.88))}
   .wrap{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:28px 28px 40px;display:flex;flex-direction:column;gap:22px;min-height:100vh}
   header{display:flex;align-items:center;gap:14px}
   .logo{width:54px;height:54px;filter:drop-shadow(0 0 14px rgba(246,201,59,.55))}
@@ -69,11 +69,12 @@
   .dev .ic{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04)}
   .dev small{color:var(--mut)}
   .empty{color:var(--mut);font-size:14px;padding:6px 2px}
+  .artcap{position:fixed;right:18px;bottom:14px;z-index:2;font:600 11px Cinzel,Georgia,serif;letter-spacing:.2em;color:rgba(240,230,210,.55);text-transform:uppercase}
   footer{margin-top:auto;color:#6F7E99;font-size:12px;text-align:center;line-height:1.6}
 </style>
 </head>
 <body>
-<div id="bg"><div class="l"></div><div class="l"></div></div><div class="veil"></div>
+<div id="bg"><div class="l"></div><div class="l"></div></div><div class="veil"></div><div class="artcap" id="artname"></div>
 
 <svg width="0" height="0" style="position:absolute"><defs>
   <radialGradient id="yg" cx="38%" cy="32%"><stop offset="0" stop-color="#FFF6B8"/><stop offset=".55" stop-color="#F6C93B"/><stop offset="1" stop-color="#D98E1E"/></radialGradient>
@@ -116,12 +117,22 @@
 
     <section class="card qrcard" id="qrcard">
       <div class="ok-banner" id="okb"><div class="big">✓</div><div class="serif" style="font-size:20px;letter-spacing:.1em">MÓVIL VINCULADO</div><div class="hint">Ya puedes abrir YuzuLOL en tu móvil.</div></div>
-      <h2>VINCULAR MÓVIL</h2>
-      <div class="qrbox off" id="qrbox"><img id="qr" alt="Código QR"><div class="qrmsg" id="qrmsg">Cargando…</div></div>
-      <div class="hint">Si no puedes escanear, escribe la dirección y el código:</div>
-      <div class="code" id="code">······</div>
-      <div class="hint" id="timer">&nbsp;</div>
-      <button class="btn" id="newqr">Generar nuevo QR</button>
+      <div id="pairview">
+        <h2>VINCULAR MÓVIL</h2>
+        <div class="qrbox off" id="qrbox"><img id="qr" alt="Código QR"><div class="qrmsg" id="qrmsg">Cargando…</div></div>
+        <div class="hint">Si no puedes escanear, escribe la dirección y el código:</div>
+        <div class="code" id="code">······</div>
+        <div class="hint" id="timer">&nbsp;</div>
+        <button class="btn" id="newqr">Generar nuevo QR</button>
+        <button class="btn danger" id="cancelqr" hidden style="margin-left:8px">Cancelar</button>
+      </div>
+      <div id="linkedview" hidden>
+        <h2>MÓVIL VINCULADO</h2>
+        <div style="font-size:64px;color:var(--teal);margin:18px 0 6px;text-shadow:0 0 24px rgba(11,196,180,.5)">✓</div>
+        <div class="serif" style="font-size:18px;letter-spacing:.08em" id="linkedname"></div>
+        <p class="hint" style="margin:10px 0 0">Ya está todo listo: abre YuzuLOL en el móvil y se conecta solo.</p>
+        <button class="btn" id="relink">¿Vincular otro móvil?</button>
+      </div>
     </section>
   </main>
 
@@ -138,17 +149,17 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // ---- fondo: splash arts de Data Dragon, con fundido ----
-const ARTS = ['Kaisa', 'Ahri', 'Jinx', 'Yone', 'Lillia', 'Akali', 'Lux', 'Sylas'];
-const url = (n) => `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${n}_0.jpg`;
+const ARTS = ['Kaisa', 'Ahri', 'Jinx', 'Yone', 'Lillia', 'Akali', 'Lux', 'Sylas', 'Aatrox', 'Viego', 'Ekko', 'Briar', 'Zed', 'Katarina', 'Yasuo', 'Seraphine'].sort(() => Math.random() - 0.5);
+const url = (n) => `/panel/art/${n}`;   // el programa las baja una vez y las guarda en el PC
 const layers = [...document.querySelectorAll('#bg .l')];
-let cur = Math.floor(Math.random() * ARTS.length), top = 0;
+let cur = 0, layerIdx = 0;
 function nextBg() {
-  const n = ARTS[cur % ARTS.length]; cur++;
+  const n = ARTS[cur % ARTS.length]; cur++; $('artname').textContent = n;
   const img = new Image();
-  img.onload = () => { const l = layers[top ^= 1]; l.style.backgroundImage = `url(${url(n)})`; layers[0].classList.toggle('on', top === 0); layers[1].classList.toggle('on', top === 1); };
+  img.onload = () => { const l = layers[layerIdx ^= 1]; l.style.backgroundImage = `url(${url(n)})`; layers[0].classList.toggle('on', layerIdx === 0); layers[1].classList.toggle('on', layerIdx === 1); };
   img.src = url(n);
 }
-nextBg(); setInterval(nextBg, 11000);
+nextBg(); setInterval(nextBg, 12000);
 
 // ---- icono de invocador ----
 let ddver = null;
@@ -172,18 +183,19 @@ function render(st) {
   $('sum').innerHTML = s ? `${ddver && s.icon != null ? `<img src="https://ddragon.leagueoflegends.com/cdn/${ddver}/img/profileicon/${s.icon}.png" alt="">` : '<img alt="">'}<div><div class="nm">${esc(s.name)}</div><div class="hint">Nivel ${s.level ?? '–'}</div></div>`
     : '<span class="hint">Abre el cliente de LoL e inicia sesión.</span>';
 
-  // QR
-  const p = st.pairing, box = $('qrbox');
+  // QR / vinculado
+  const p = st.pairing, box = $('qrbox'), linked = st.devices.length > 0;
+  const showPair = !!p || !linked;                       // con un móvil ya vinculado el QR solo sale si lo pides
+  $('pairview').hidden = !showPair; $('linkedview').hidden = showPair;
+  $('cancelqr').hidden = !(p && linked);
+  if (linked) $('linkedname').textContent = st.devices.length === 1 ? st.devices[0].name : st.devices.length + ' dispositivos';
   if (p) {
     if (lastQr !== p.id) { lastQr = p.id; $('qr').src = '/panel/qr.svg?t=' + p.id; }
     box.classList.remove('off'); $('qrmsg').textContent = ''; $('code').textContent = p.code;
     timerLeft = p.expiresIn; $('timer').textContent = `Vence en ${mmss(timerLeft)}`;
-    $('newqr').textContent = 'Generar nuevo QR';
   } else {
     lastQr = ''; box.classList.add('off'); $('qr').removeAttribute('src');
-    $('qrmsg').textContent = st.devices.length ? 'Pulsa el botón para vincular otro móvil' : 'Generando…';
-    $('code').textContent = '······'; $('timer').innerHTML = '&nbsp;';
-    $('newqr').textContent = 'Vincular otro móvil';
+    $('qrmsg').textContent = 'Generando…'; $('code').textContent = '······'; $('timer').innerHTML = '&nbsp;';
   }
   $('qr').onerror = () => { if (p) { $('qrmsg').innerHTML = `Abre la app y escribe:<br><b>${esc(st.ip)}:${st.port}</b>`; box.classList.add('off'); } };
 
@@ -196,7 +208,8 @@ function render(st) {
 async function poll() { try { render(await api('/panel/api/state')); } catch { $('ltxt').textContent = 'Programa detenido'; $('ldot').className = 'dot'; } }
 poll(); setInterval(poll, 1500);
 setInterval(() => { if (timerLeft > 0) { timerLeft--; $('timer').textContent = timerLeft ? `Vence en ${mmss(timerLeft)}` : 'Vencido'; } }, 1000);
-$('newqr').onclick = async () => render(await api('/panel/api/pair/new', 'POST'));
+$('newqr').onclick = $('relink').onclick = async () => render(await api('/panel/api/pair/new', 'POST'));
+$('cancelqr').onclick = async () => render(await api('/panel/api/pair/cancel', 'POST'));
 $('devs').onclick = async (e) => {
   const id = e.target.dataset?.rm; if (!id) return;
   if (confirm('¿Quitar este dispositivo? Tendrá que volver a vincularse.')) render(await api('/panel/api/device/remove', 'POST', { id }));

@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
-      - name: Instalar y compilar el .exe
+      - name: Instalar y compilar el .exe (Electron: ventana propia, sin navegador)
         working-directory: lol-companion
         run: |
           npm install
@@ -21,7 +21,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: YuzuLOL-exe
-          path: lol-companion/YuzuLOL.exe
+          path: lol-companion/dist/YuzuLOL.exe
 
   apk-android:
     runs-on: ubuntu-latest
@@ -31,7 +31,10 @@ jobs:
         with: { node-version: 20 }
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 17 }
-      - uses: android-actions/setup-android@v3
+      # El runner ya trae el SDK de Android: no hace falta android-actions/setup-android
+      # (era lo que fallaba con "Failed to find package 'tools'"). Solo se aceptan las licencias.
+      - name: Aceptar licencias del SDK de Android
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
       - name: Crear el proyecto Android
         working-directory: lol-companion/android-app
         run: |

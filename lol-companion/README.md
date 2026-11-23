@@ -14,7 +14,7 @@ Segunda pantalla para League of Legends: cola, aceptar partida, selección de ca
 Instala Node.js (nodejs.org) y haz doble clic en `iniciar.bat`. Instala lo necesario la primera vez y arranca el servidor.
 
 ## Crear un .exe
-Con Node.js instalado, abre una terminal en la carpeta y ejecuta `npm install` y luego `npm run build`. Genera `YuzuLOL.exe`, que ya no necesita Node ni la carpeta del proyecto. Guarda `devices.json` junto al .exe. (No está probado: si falla, usa `iniciar.bat`.)
+Con Node.js instalado, abre una terminal en la carpeta y ejecuta `npm install` y luego `npm run build`. Genera `dist/YuzuLOL.exe` (Electron): una ventana propia, sin navegador, que no necesita Node ni la carpeta del proyecto. Los dispositivos vinculados se guardan en `%APPDATA%\YuzuLOL`, así que no se pierden aunque muevas el .exe. Para probar sin compilar: `npm run app`.
 
 ## Uso
 1. `npm install`
@@ -53,9 +53,9 @@ La LCU no es una API oficial y puede cambiar con los parches. Este proyecto no e
 
 ## Para repartirlo a un amigo (sin instalar nada)
 1. Sube esta carpeta a un repositorio de GitHub. En la pestaña **Actions** se compilan solos `YuzuLOL.exe` y `app-debug.apk` (también con "Run workflow").
-2. Tu amigo, en su PC: abre `YuzuLOL.exe` (si Windows avisa, "Más información" > "Ejecutar de todas formas"; en el firewall, "Permitir acceso" en red privada). Se abre un panel con el QR en su navegador. No necesita Node.js.
+2. Tu amigo, en su PC: abre `YuzuLOL.exe` (si Windows avisa, "Más información" > "Ejecutar de todas formas"; en el firewall, "Permitir acceso" en red privada). Se abre la ventana de YuzuLOL con el QR. No necesita Node.js.
 3. En su móvil: instala el APK (permitir "orígenes desconocidos"), ábrelo, pulsa **Escanear QR** y escanea el QR del panel. Solo se hace una vez.
 4. Desde entonces: abre el programa en el PC y la app en el móvil. Si cambia la IP del PC, la app vuelve a pedir el QR (pulsa "Generar nuevo QR" en el panel).
 
 ## Panel del PC
-Al abrir `YuzuLOL.exe` se abre solo un panel en el navegador (`http://localhost:8080/panel`): estado del cliente de LoL, tu invocador, el QR para vincular el móvil, el código de 6 dígitos y la lista de dispositivos vinculados (con botón para quitarlos). El panel solo funciona desde el propio PC. La ventana negra debe quedarse abierta (puedes minimizarla).
+Al abrir `YuzuLOL.exe` se abre la ventana del programa: estado del cliente de LoL, tu invocador, el QR para vincular el móvil, el código de 6 dígitos y la lista de dispositivos vinculados (con botón para quitarlos). El panel solo funciona desde el propio PC. Deja el programa abierto (puedes minimizarlo). Con un móvil ya vinculado el QR no se muestra: solo sale si pulsas «¿Vincular otro móvil?».

@@ -88,11 +88,11 @@ const show = (setup) => { $('load').hidden = setup; $('setup').hidden = !setup; 
 // fondo: splash arts de LoL con fundido (si no hay internet, queda el degradado)
 const ARTS = ['Kaisa', 'Ahri', 'Jinx', 'Yone', 'Lillia', 'Akali', 'Lux', 'Sylas'];
 const layers = [...document.querySelectorAll('#bg .l')];
-let cur = Math.floor(Math.random() * ARTS.length), top = 0;
+let cur = Math.floor(Math.random() * ARTS.length), layerIdx = 0;
 function nextBg() {
   const u = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${ARTS[cur++ % ARTS.length]}_0.jpg`;
   const img = new Image();
-  img.onload = () => { const l = layers[top ^= 1]; l.style.backgroundImage = `url(${u})`; layers[0].classList.toggle('on', top === 0); layers[1].classList.toggle('on', top === 1); };
+  img.onload = () => { const l = layers[layerIdx ^= 1]; l.style.backgroundImage = `url(${u})`; layers[0].classList.toggle('on', layerIdx === 0); layers[1].classList.toggle('on', layerIdx === 1); };
   img.src = u;
 }
 nextBg(); setInterval(nextBg, 9000);

@@ -2,3 +2,4 @@ node_modules/
 devices.json
 *.exe
 lol-companion/android-app/android/
+dist/

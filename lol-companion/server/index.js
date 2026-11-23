@@ -6,14 +6,17 @@ const CS = require('./champselect'), RUNES = require('./runes');
 
 const PORT = +process.env.PORT || 8080;
 const PUB = path.join(__dirname, '..', 'public');
-const BASE = process.pkg ? path.dirname(process.execPath) : path.join(__dirname, '..'); // junto al .exe si está empaquetado
+// Carpeta de datos: la fija Electron (AppData\YuzuLOL, siempre la misma aunque muevas el .exe); si no, junto al proyecto / .exe
+const BASE = process.env.YUZU_DATA || (process.pkg ? path.dirname(process.execPath) : path.join(__dirname, '..'));
+try { fs.mkdirSync(BASE, { recursive: true }); } catch {}
 const DEV_FILE = path.join(BASE, 'devices.json');
 let devices = {};
 try { devices = JSON.parse(fs.readFileSync(DEV_FILE, 'utf8')); } catch {}
 const saveDevices = () => fs.writeFileSync(DEV_FILE, JSON.stringify(devices, null, 1));
 
 const lcu = new LCU();
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+// Sin consola (ventana propia / Electron) no hay teclado: se usa un lector vacío
+const rl = process.stdin.isTTY ? readline.createInterface({ input: process.stdin, output: process.stdout }) : { on() {}, question: (q, cb) => cb('s') };
 const state = { connected: false, phase: 'None', lobby: null, search: null, readyCheck: null, champSelect: null,
   summoner: null, ranked: null, history: [], pickable: [], bannable: [], perks: [], game: null, ranks: {}, live: null };
 const clients = new Set();
@@ -272,12 +275,29 @@ function openPanel() {
   require('child_process').exec(cmd, () => {});
 }
 
+// Splash arts: se bajan una vez de Data Dragon y se guardan en disco (después cargan al instante y sin internet)
+const ART_DIR = path.join(BASE, 'cache', 'art');
+function serveArt(res, name) {
+  if (!/^[A-Za-z]{2,24}$/.test(name)) { res.writeHead(400); return res.end(); }
+  const f = path.join(ART_DIR, name + '.jpg');
+  const send = () => { res.writeHead(200, { 'Content-Type': 'image/jpeg', 'Cache-Control': 'max-age=86400' }); fs.createReadStream(f).pipe(res); };
+  if (fs.existsSync(f)) return send();
+  require('https').get(`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${name}_0.jpg`, (r) => {
+    if (r.statusCode !== 200) { r.resume(); res.writeHead(404); return res.end(); }
+    fs.mkdirSync(ART_DIR, { recursive: true });
+    const tmp = f + '.part', w = fs.createWriteStream(tmp);
+    r.pipe(w);
+    w.on('finish', () => { fs.renameSync(tmp, f); send(); });
+    w.on('error', () => { res.writeHead(500); res.end(); });
+  }).on('error', () => { res.writeHead(502); res.end(); });
+}
+
 // ---------- HTTP ----------
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml' };
 const body = (req) => new Promise((ok) => { let b = ''; req.on('data', (c) => (b += c)); req.on('end', () => { try { ok(JSON.parse(b || '{}')); } catch { ok({}); } }); });
 const json = (res, code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); };
 
-http.createServer(async (req, res) => {
+const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   const tok = (req.headers.authorization || '').replace('Bearer ', '') || url.searchParams.get('t');
   const dev = devices[tok];
@@ -287,11 +307,13 @@ http.createServer(async (req, res) => {
       if (url.pathname === '/panel') { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }); return fs.createReadStream(path.join(PUB, 'panel.html')).pipe(res); }
       if (url.pathname === '/panel/api/state') return json(res, 200, panelState());
       if (url.pathname === '/panel/api/pair/new' && req.method === 'POST') { newPairing(false); return json(res, 200, panelState()); }
+      if (url.pathname === '/panel/api/pair/cancel' && req.method === 'POST') { pairing = null; return json(res, 200, panelState()); }
       if (url.pathname === '/panel/api/device/remove' && req.method === 'POST') {
         const { id } = await body(req); const t = Object.keys(devices).find((k) => devId(k) === id);
         if (t) { delete devices[t]; saveDevices(); for (const r of clients) if (r.tok === t) r.end(); }
         return json(res, 200, panelState());
       }
+      if (url.pathname.startsWith('/panel/art/')) return serveArt(res, decodeURIComponent(url.pathname.slice(11)));
       if (url.pathname === '/panel/qr.svg') {
         if (!pairing || Date.now() > pairing.exp) { res.writeHead(404); return res.end(); }
         try { res.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' }); return res.end(qrSvg(`http://${localIp()}:${PORT}/?pair=${pairing.token}`)); }
@@ -334,8 +356,16 @@ http.createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
     fs.createReadStream(file).pipe(res);
   } catch (e) { json(res, 500, { error: e.message }); }
-}).listen(PORT, '0.0.0.0', () => {
+});
+server.on('error', (e) => {
+  const msg = e.code === 'EADDRINUSE' ? `El puerto ${PORT} ya está en uso. ¿Tienes YuzuLOL abierto dos veces?` : e.message;
+  console.error(msg);
+  if (process.versions.electron) require('electron').dialog.showErrorBox('YuzuLOL', msg);
+  process.exit(1);
+});
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`\n  YuzuLOL en marcha\n  Panel: http://localhost:${PORT}/panel  (se abre solo; si no, ábrelo en el navegador)\n  Deja esta ventana abierta mientras juegas; puedes minimizarla.\n`);
+  process.emit('yuzu-ready', PORT);
   setInterval(() => { for (const r of clients) r.write(': ping\n\n'); }, 20000);
   if (!Object.keys(devices).length) newPairing(false);
   openPanel();

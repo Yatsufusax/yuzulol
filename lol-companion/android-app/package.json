@@ -1,0 +1,14 @@
+{
+  "name": "yuzulol-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cascarón Android (Capacitor) de YuzuLOL: escanea el QR del PC y abre la app",
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor-mlkit/barcode-scanning": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

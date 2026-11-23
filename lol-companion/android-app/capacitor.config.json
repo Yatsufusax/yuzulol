@@ -1,0 +1,12 @@
+{
+  "appId": "com.yuzulol.app",
+  "appName": "YuzuLOL",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

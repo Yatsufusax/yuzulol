@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050B16">
+<title>YuzuLOL</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--gold:#C8AA6E;--cream:#F0E6D2;--teal:#0BC4B4;--mut:#A5B4CE}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;background:#050B16;color:var(--cream);font-family:Inter,system-ui,sans-serif;overflow:hidden}
+  #bg{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 15%,#12315a,#050B16 70%)}
+  #bg .l{position:absolute;inset:0;background-size:cover;background-position:center 18%;opacity:0;transition:opacity 2s ease;animation:drift 30s ease-in-out infinite alternate}
+  #bg .l.on{opacity:1}
+  @keyframes drift{from{transform:scale(1.05)}to{transform:scale(1.14) translateX(-2%)}}
+  .veil{position:fixed;inset:0;background:linear-gradient(180deg,rgba(5,11,22,.35) 0%,rgba(5,11,22,.55) 35%,rgba(5,11,22,.93) 78%,#050B16 100%)}
+  .screen{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 40px) 24px calc(env(safe-area-inset-bottom) + 28px);text-align:center}
+  .logo{width:84px;height:84px;filter:drop-shadow(0 0 18px rgba(246,201,59,.6));animation:float 4s ease-in-out infinite}
+  @keyframes float{50%{transform:translateY(-6px)}}
+  .brand{font-family:Cinzel,Georgia,serif;font-weight:700;font-size:40px;letter-spacing:.16em;margin:8px 0 2px;background:linear-gradient(180deg,#F8E9B7,#C8AA6E 60%,#8C6F2F);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 8px rgba(0,0,0,.6))}
+  .tag{color:var(--mut);font-size:14px;letter-spacing:.05em}
+  .panel{width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .frame{position:relative;width:176px;height:176px;margin:4px 0 8px}
+  .frame i{position:absolute;width:34px;height:34px;border:3px solid var(--gold);filter:drop-shadow(0 0 8px rgba(200,170,110,.6))}
+  .frame i:nth-child(1){left:0;top:0;border-right:0;border-bottom:0;border-radius:12px 0 0 0}
+  .frame i:nth-child(2){right:0;top:0;border-left:0;border-bottom:0;border-radius:0 12px 0 0}
+  .frame i:nth-child(3){left:0;bottom:0;border-right:0;border-top:0;border-radius:0 0 0 12px}
+  .frame i:nth-child(4){right:0;bottom:0;border-left:0;border-top:0;border-radius:0 0 12px 0}
+  .frame::before{content:"";position:absolute;left:14px;right:14px;height:3px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent);box-shadow:0 0 14px var(--teal);animation:scan 2.4s ease-in-out infinite}
+  @keyframes scan{0%,100%{top:16px}50%{top:156px}}
+  .frame svg{position:absolute;inset:38px;width:100px;height:100px;opacity:.28}
+  .btn{width:100%;border:0;border-radius:14px;padding:17px;font-size:16px;font-weight:700;letter-spacing:.1em;cursor:pointer;transition:transform .12s}
+  .btn:active{transform:scale(.97)}
+  .btn.main{background:linear-gradient(180deg,#14C9BA,#08877F);color:#031A1F;box-shadow:0 8px 28px rgba(11,196,180,.35)}
+  .btn.ghost{background:rgba(10,20,40,.55);border:1px solid rgba(200,170,110,.4);color:var(--cream);font-size:14px;font-weight:600;padding:13px;letter-spacing:.04em;backdrop-filter:blur(8px)}
+  .steps{color:var(--mut);font-size:13px;line-height:1.7;background:rgba(10,20,40,.5);border:1px solid rgba(200,170,110,.18);border-radius:12px;padding:12px 16px;backdrop-filter:blur(8px);width:100%;text-align:left}
+  .steps b{color:var(--gold)}
+  #err{color:#FF8A8A;font-size:13px;min-height:18px;line-height:1.4}
+  input{width:100%;padding:14px;border-radius:12px;border:1px solid rgba(200,170,110,.4);background:rgba(10,20,40,.7);color:var(--cream);font-size:16px;text-align:center;outline:none}
+  input:focus{border-color:var(--teal)}
+  .spin{width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:var(--teal);animation:s .9s linear infinite;margin:0 auto 14px}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .foot{font-size:11px;color:#5E6C86}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div id="bg"><div class="l"></div><div class="l"></div></div><div class="veil"></div>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+  <radialGradient id="yg" cx="38%" cy="32%"><stop offset="0" stop-color="#FFF6B8"/><stop offset=".55" stop-color="#F6C93B"/><stop offset="1" stop-color="#D98E1E"/></radialGradient>
+  <symbol id="yuzu" viewBox="0 0 64 64">
+    <circle cx="32" cy="36" r="23" fill="url(#yg)"/><circle cx="32" cy="36" r="18" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/>
+    <path d="M32 18v36M14 36h36M19.5 23.5l25 25M44.5 23.5l-25 25" stroke="rgba(255,255,255,.26)" stroke-width="1.2"/>
+    <path d="M33 14c4-7 12-8 16-6-1 7-8 11-16 6z" fill="#5FB35A"/><path d="M33 14c-1 3-1 5 0 8" stroke="#3E8A3E" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </symbol></defs></svg>
+
+<div class="screen" id="load">
+  <div></div>
+  <div><svg class="logo"><use href="#yuzu"/></svg><div class="brand">YUZULOL</div><div style="margin-top:26px"><div class="spin"></div><div class="tag">Buscando tu PC…</div></div></div>
+  <div class="foot">&nbsp;</div>
+</div>
+
+<div class="screen" id="setup" hidden>
+  <div><svg class="logo"><use href="#yuzu"/></svg><div class="brand">YUZULOL</div><div class="tag">Tu segunda pantalla para League of Legends</div></div>
+  <div class="panel">
+    <div class="frame"><i></i><i></i><i></i><i></i>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#F0E6D2" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v3M14 20h3M20 20h1"/></svg>
+    </div>
+    <div class="steps"><b>1.</b> Abre <b>YuzuLOL</b> en tu PC.<br><b>2.</b> Pulsa el botón y apunta al código QR de su pantalla.</div>
+    <button class="btn main" id="scan">ESCANEAR QR</button>
+    <button class="btn ghost" id="man">Escribir la dirección a mano</button>
+    <div id="manual" hidden style="width:100%;display:flex;flex-direction:column;gap:10px">
+      <input id="addr" placeholder="192.168.1.20:8080" inputmode="url" autocapitalize="off" autocomplete="off">
+      <button class="btn main" id="go" style="padding:14px">CONECTAR</button>
+    </div>
+    <div id="err"></div>
+  </div>
+  <div class="foot">No afiliado con Riot Games</div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const KEY = 'server_base';
+const show = (setup) => { $('load').hidden = setup; $('setup').hidden = !setup; };
+
+// fondo: splash arts de LoL con fundido (si no hay internet, queda el degradado)
+const ARTS = ['Kaisa', 'Ahri', 'Jinx', 'Yone', 'Lillia', 'Akali', 'Lux', 'Sylas'];
+const layers = [...document.querySelectorAll('#bg .l')];
+let cur = Math.floor(Math.random() * ARTS.length), top = 0;
+function nextBg() {
+  const u = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${ARTS[cur++ % ARTS.length]}_0.jpg`;
+  const img = new Image();
+  img.onload = () => { const l = layers[top ^= 1]; l.style.backgroundImage = `url(${u})`; layers[0].classList.toggle('on', top === 0); layers[1].classList.toggle('on', top === 1); };
+  img.src = u;
+}
+nextBg(); setInterval(nextBg, 9000);
+
+// ¿Responde el servidor? (con no-cors basta con que conteste algo, aunque sea 401)
+async function alive(base) {
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 3000);
+  try { await fetch(base + '/api/ping', { mode: 'no-cors', signal: ctl.signal, cache: 'no-store' }); return true; }
+  catch { return false; } finally { clearTimeout(t); }
+}
+const open = (url) => location.replace(url);
+
+// Lee http://IP:PUERTO/?pair=TOKEN (el QR) o una dirección escrita a mano
+function parse(text) {
+  try {
+    let t = String(text).trim();
+    if (!/^https?:\/\//i.test(t)) t = 'http://' + t;
+    const u = new URL(t);
+    return { base: u.origin, full: u.href };
+  } catch { return null; }
+}
+
+async function connect(text) {
+  const p = parse(text);
+  if (!p) { $('err').textContent = 'Dirección no válida'; return; }
+  $('err').textContent = '';
+  show(false);
+  if (!(await alive(p.base))) { show(true); $('err').textContent = 'No encuentro tu PC. ¿Está abierto YuzuLOL y están en el mismo Wi-Fi?'; return; }
+  localStorage.setItem(KEY, p.base);
+  open(p.full);   // si trae ?pair=, la app se vincula sola
+}
+
+async function scan() {
+  const BS = window.Capacitor?.Plugins?.BarcodeScanner;
+  if (!BS) { $('err').textContent = 'El escáner no está disponible. Usa la dirección a mano.'; return; }
+  try {
+    const perm = await BS.requestPermissions();
+    if (perm.camera !== 'granted' && perm.camera !== 'limited') { $('err').textContent = 'Necesito permiso de cámara para escanear el QR.'; return; }
+    const { barcodes } = await BS.scan({ formats: ['QR_CODE'] });
+    const v = barcodes?.[0]?.rawValue;
+    if (v) await connect(v);
+  } catch (e) { $('err').textContent = 'No pude escanear: ' + (e?.message || e); }
+}
+
+$('scan').onclick = scan;
+$('man').onclick = () => { $('manual').hidden = false; $('addr').focus(); };
+$('go').onclick = () => connect($('addr').value);
+
+(async () => {
+  const saved = localStorage.getItem(KEY);
+  if (saved && (await alive(saved))) return open(saved + '/');
+  show(true);
+  if (saved) $('err').textContent = 'No encuentro tu PC. Abre YuzuLOL en el PC y escanea el QR de nuevo si cambió de red.';
+})();
+</script>
+</body>
+</html>

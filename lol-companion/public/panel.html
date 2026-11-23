@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YuzuLOL</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='36' r='24' fill='%23F6C93B'/%3E%3Cpath d='M33 14c4-7 12-8 16-6-1 7-8 11-16 6z' fill='%235FB35A'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--gold:#C8AA6E;--gold2:#F0E6D2;--teal:#0BC4B4;--bg:#050B16;--glass:rgba(10,20,40,.62);--line:rgba(200,170,110,.28);--mut:#A5B4CE;--red:#FF6B6B}
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--gold2);font-family:Inter,system-ui,sans-serif}
+  .serif{font-family:Cinzel,Georgia,serif}
+  /* fondo con splash arts que rotan */
+  #bg{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse at 30% 20%,#12315a,#050B16 70%)}
+  #bg .l{position:absolute;inset:0;background-size:cover;background-position:center 20%;opacity:0;transition:opacity 2.2s ease;transform:scale(1.04);animation:drift 40s ease-in-out infinite alternate}
+  #bg .l.on{opacity:1}
+  @keyframes drift{from{transform:scale(1.04) translateX(0)}to{transform:scale(1.1) translateX(-1.5%)}}
+  .veil{position:fixed;inset:0;z-index:1;background:linear-gradient(90deg,rgba(5,11,22,.92) 0%,rgba(5,11,22,.62) 45%,rgba(5,11,22,.8) 100%),linear-gradient(180deg,rgba(5,11,22,.55),rgba(5,11,22,.9))}
+  .wrap{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:28px 28px 40px;display:flex;flex-direction:column;gap:22px;min-height:100vh}
+  header{display:flex;align-items:center;gap:14px}
+  .logo{width:54px;height:54px;filter:drop-shadow(0 0 14px rgba(246,201,59,.55))}
+  .brand{font-family:Cinzel,Georgia,serif;font-weight:700;font-size:32px;letter-spacing:.14em;background:linear-gradient(180deg,#F8E9B7,#C8AA6E 60%,#8C6F2F);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tag{color:var(--mut);font-size:13px;margin-top:2px;letter-spacing:.04em}
+  .grow{flex:1}
+  .pill{display:flex;align-items:center;gap:9px;padding:9px 16px;border-radius:999px;background:var(--glass);border:1px solid var(--line);font-size:13px;backdrop-filter:blur(10px)}
+  .dot{width:9px;height:9px;border-radius:50%;background:#7A8499;box-shadow:0 0 0 0 transparent}
+  .dot.ok{background:var(--teal);box-shadow:0 0 10px var(--teal)}.dot.wait{background:#E6B84A;animation:pulse 1.6s infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  main{display:grid;grid-template-columns:1.15fr 1fr;gap:22px;align-items:start}
+  @media(max-width:860px){main{grid-template-columns:1fr}}
+  .card{background:var(--glass);border:1px solid var(--line);border-radius:16px;padding:22px;backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(0,0,0,.35)}
+  .card h2{margin:0 0 14px;font-family:Cinzel,Georgia,serif;font-size:15px;letter-spacing:.16em;color:var(--gold);font-weight:600}
+  .hero h1{font-family:Cinzel,Georgia,serif;font-size:44px;line-height:1.08;margin:6px 0 12px;font-weight:700}
+  .hero h1 em{font-style:normal;color:var(--gold)}
+  .hero p{color:var(--mut);font-size:16px;line-height:1.6;margin:0 0 22px;max-width:520px}
+  .steps{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+  .steps li{display:flex;gap:14px;align-items:center;font-size:15px}
+  .steps b{flex:0 0 32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--gold);color:var(--gold);font-family:Cinzel,Georgia,serif}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
+  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+  .kv{display:flex;flex-direction:column;gap:3px}
+  .kv small{color:var(--mut);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+  .kv span{font-size:17px;font-weight:600;word-break:break-all}
+  .sum{display:flex;align-items:center;gap:14px}
+  .sum img{width:56px;height:56px;border-radius:50%;border:2px solid var(--gold);object-fit:cover;background:#13243f}
+  .sum .nm{font-size:19px;font-weight:700}
+  /* tarjeta del QR */
+  .qrcard{text-align:center;position:relative}
+  .qrbox{width:268px;height:268px;margin:6px auto 14px;padding:10px;background:#fff;border-radius:16px;position:relative;box-shadow:0 0 0 3px #0A1428,0 0 0 5px var(--gold),0 0 40px rgba(200,170,110,.35)}
+  .qrbox img{width:100%;height:100%;display:block;image-rendering:pixelated}
+  .qrbox::before,.qrbox::after{content:"";position:absolute;left:10px;right:10px;height:3px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent);box-shadow:0 0 12px var(--teal);animation:scan 2.6s ease-in-out infinite}
+  .qrbox::after{display:none}
+  @keyframes scan{0%,100%{top:14px}50%{top:calc(100% - 17px)}}
+  .qrbox.off img{opacity:.08}.qrbox.off::before{display:none}
+  .qrmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#0A1428;font-weight:600;padding:20px;font-size:15px}
+  .code{font-family:Cinzel,Georgia,serif;font-size:30px;letter-spacing:.3em;color:var(--gold2);margin:4px 0 2px}
+  .hint{color:var(--mut);font-size:13px;line-height:1.5}
+  .btn{margin-top:14px;border:1px solid var(--gold);background:linear-gradient(180deg,rgba(200,170,110,.22),rgba(200,170,110,.06));color:var(--gold2);padding:12px 22px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;letter-spacing:.04em;transition:.15s}
+  .btn:hover{background:rgba(200,170,110,.3);transform:translateY(-1px)}
+  .btn.teal{background:linear-gradient(180deg,#14C9BA,#08877F);border:0;color:#031A1F}
+  .btn.sm{margin:0;padding:7px 12px;font-size:12px}
+  .btn.danger{border-color:rgba(255,107,107,.5);color:var(--red);background:transparent}
+  .ok-banner{display:none;position:absolute;inset:0;border-radius:16px;background:rgba(6,24,30,.92);align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:3}
+  .ok-banner.show{display:flex}.ok-banner .big{font-size:54px}
+  /* dispositivos */
+  .dev{display:flex;align-items:center;gap:14px;padding:12px 4px;border-top:1px solid rgba(200,170,110,.15)}
+  .dev:first-of-type{border-top:0}
+  .dev .ic{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04)}
+  .dev small{color:var(--mut)}
+  .empty{color:var(--mut);font-size:14px;padding:6px 2px}
+  footer{margin-top:auto;color:#6F7E99;font-size:12px;text-align:center;line-height:1.6}
+</style>
+</head>
+<body>
+<div id="bg"><div class="l"></div><div class="l"></div></div><div class="veil"></div>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+  <radialGradient id="yg" cx="38%" cy="32%"><stop offset="0" stop-color="#FFF6B8"/><stop offset=".55" stop-color="#F6C93B"/><stop offset="1" stop-color="#D98E1E"/></radialGradient>
+  <symbol id="yuzu" viewBox="0 0 64 64">
+    <circle cx="32" cy="36" r="23" fill="url(#yg)"/>
+    <circle cx="32" cy="36" r="18" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/>
+    <path d="M32 18v36M14 36h36M19.5 23.5l25 25M44.5 23.5l-25 25" stroke="rgba(255,255,255,.26)" stroke-width="1.2"/>
+    <path d="M33 14c4-7 12-8 16-6-1 7-8 11-16 6z" fill="#5FB35A"/><path d="M33 14c-1 3-1 5 0 8" stroke="#3E8A3E" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </symbol></defs></svg>
+
+<div class="wrap">
+  <header>
+    <svg class="logo"><use href="#yuzu"/></svg>
+    <div><div class="brand">YUZULOL</div><div class="tag">Tu segunda pantalla para League of Legends</div></div>
+    <div class="grow"></div>
+    <div class="pill"><span class="dot wait" id="ldot"></span><span id="ltxt">Buscando el cliente de LoL…</span></div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="card" style="background:transparent;border:0;box-shadow:none;backdrop-filter:none;padding:6px 0 0">
+        <h1>Tu partida,<br><em>en la palma de tu mano.</em></h1>
+        <p>Banea, elige campeón, cambia tus runas y acepta la partida desde el móvil sin tocar el PC. Todo en tiempo real con tu cliente de League of Legends.</p>
+        <ol class="steps">
+          <li><b>1</b><span>Abre YuzuLOL en tu móvil.</span></li>
+          <li><b>2</b><span>Pulsa <strong>Escanear QR</strong> y apunta al código de la derecha.</span></li>
+          <li><b>3</b><span>Listo. La próxima vez solo abre el programa y la app.</span></li>
+        </ol>
+      </div>
+      <div class="grid2">
+        <div class="card"><h2>INVOCADOR</h2>
+          <div class="sum" id="sum"><span class="hint">Abre el cliente de LoL e inicia sesión.</span></div>
+        </div>
+        <div class="card"><h2>CONEXIÓN</h2>
+          <div class="kv"><small>Dirección del PC</small><span id="addr">—</span></div>
+          <p class="hint" style="margin:10px 0 0">El móvil y el PC deben estar en el mismo Wi-Fi.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card qrcard" id="qrcard">
+      <div class="ok-banner" id="okb"><div class="big">✓</div><div class="serif" style="font-size:20px;letter-spacing:.1em">MÓVIL VINCULADO</div><div class="hint">Ya puedes abrir YuzuLOL en tu móvil.</div></div>
+      <h2>VINCULAR MÓVIL</h2>
+      <div class="qrbox off" id="qrbox"><img id="qr" alt="Código QR"><div class="qrmsg" id="qrmsg">Cargando…</div></div>
+      <div class="hint">Si no puedes escanear, escribe la dirección y el código:</div>
+      <div class="code" id="code">······</div>
+      <div class="hint" id="timer">&nbsp;</div>
+      <button class="btn" id="newqr">Generar nuevo QR</button>
+    </section>
+  </main>
+
+  <section class="card">
+    <h2>DISPOSITIVOS VINCULADOS</h2>
+    <div id="devs"><div class="empty">Aún no hay ninguno.</div></div>
+  </section>
+
+  <footer>YuzuLOL no está respaldado por Riot Games ni refleja las opiniones de Riot Games. League of Legends es una marca registrada de Riot Games, Inc.<br>Deja el programa abierto mientras juegas.</footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// ---- fondo: splash arts de Data Dragon, con fundido ----
+const ARTS = ['Kaisa', 'Ahri', 'Jinx', 'Yone', 'Lillia', 'Akali', 'Lux', 'Sylas'];
+const url = (n) => `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${n}_0.jpg`;
+const layers = [...document.querySelectorAll('#bg .l')];
+let cur = Math.floor(Math.random() * ARTS.length), top = 0;
+function nextBg() {
+  const n = ARTS[cur % ARTS.length]; cur++;
+  const img = new Image();
+  img.onload = () => { const l = layers[top ^= 1]; l.style.backgroundImage = `url(${url(n)})`; layers[0].classList.toggle('on', top === 0); layers[1].classList.toggle('on', top === 1); };
+  img.src = url(n);
+}
+nextBg(); setInterval(nextBg, 11000);
+
+// ---- icono de invocador ----
+let ddver = null;
+fetch('https://ddragon.leagueoflegends.com/api/versions.json').then((r) => r.json()).then((v) => (ddver = v[0])).catch(() => {});
+
+// ---- estado ----
+let lastQr = '', lastDevCount = null, timerLeft = 0;
+async function api(path, method = 'GET', body) {
+  const r = await fetch(path, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  return r.json();
+}
+const when = (t) => new Date(t).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' });
+const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+function render(st) {
+  // LoL
+  $('ldot').className = 'dot ' + (st.lol ? 'ok' : 'wait');
+  $('ltxt').textContent = st.lol ? 'Cliente de LoL conectado' : 'Abre el cliente de LoL e inicia sesión';
+  $('addr').textContent = `${st.ip}:${st.port}`;
+  const s = st.summoner;
+  $('sum').innerHTML = s ? `${ddver && s.icon != null ? `<img src="https://ddragon.leagueoflegends.com/cdn/${ddver}/img/profileicon/${s.icon}.png" alt="">` : '<img alt="">'}<div><div class="nm">${esc(s.name)}</div><div class="hint">Nivel ${s.level ?? '–'}</div></div>`
+    : '<span class="hint">Abre el cliente de LoL e inicia sesión.</span>';
+
+  // QR
+  const p = st.pairing, box = $('qrbox');
+  if (p) {
+    if (lastQr !== p.id) { lastQr = p.id; $('qr').src = '/panel/qr.svg?t=' + p.id; }
+    box.classList.remove('off'); $('qrmsg').textContent = ''; $('code').textContent = p.code;
+    timerLeft = p.expiresIn; $('timer').textContent = `Vence en ${mmss(timerLeft)}`;
+    $('newqr').textContent = 'Generar nuevo QR';
+  } else {
+    lastQr = ''; box.classList.add('off'); $('qr').removeAttribute('src');
+    $('qrmsg').textContent = st.devices.length ? 'Pulsa el botón para vincular otro móvil' : 'Generando…';
+    $('code').textContent = '······'; $('timer').innerHTML = '&nbsp;';
+    $('newqr').textContent = 'Vincular otro móvil';
+  }
+  $('qr').onerror = () => { if (p) { $('qrmsg').innerHTML = `Abre la app y escribe:<br><b>${esc(st.ip)}:${st.port}</b>`; box.classList.add('off'); } };
+
+  // dispositivos
+  if (lastDevCount !== null && st.devices.length > lastDevCount) { $('okb').classList.add('show'); setTimeout(() => $('okb').classList.remove('show'), 3800); }
+  lastDevCount = st.devices.length;
+  $('devs').innerHTML = st.devices.length ? st.devices.map((d) => `<div class="dev"><div class="ic">📱</div><div class="grow"><b>${esc(d.name)}</b><br><small>Vinculado el ${when(d.at)}${d.online ? ' · <span style="color:var(--teal)">● conectado ahora</span>' : ''}</small></div><button class="btn sm danger" data-rm="${d.id}">Quitar</button></div>`).join('')
+    : '<div class="empty">Aún no hay ninguno. Escanea el QR desde la app.</div>';
+}
+async function poll() { try { render(await api('/panel/api/state')); } catch { $('ltxt').textContent = 'Programa detenido'; $('ldot').className = 'dot'; } }
+poll(); setInterval(poll, 1500);
+setInterval(() => { if (timerLeft > 0) { timerLeft--; $('timer').textContent = timerLeft ? `Vence en ${mmss(timerLeft)}` : 'Vencido'; } }, 1000);
+$('newqr').onclick = async () => render(await api('/panel/api/pair/new', 'POST'));
+$('devs').onclick = async (e) => {
+  const id = e.target.dataset?.rm; if (!id) return;
+  if (confirm('¿Quitar este dispositivo? Tendrá que volver a vincularse.')) render(await api('/panel/api/device/remove', 'POST', { id }));
+};
+</script>
+</body>
+</html>

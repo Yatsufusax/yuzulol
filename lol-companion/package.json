@@ -1,0 +1,22 @@
+{
+  "name": "yuzulol",
+  "version": "0.1.0",
+  "description": "Segunda pantalla para la selección de campeones de LoL (uso personal)",
+  "scripts": {
+    "start": "node server/index.js",
+    "build": "npx --yes @yao-pkg/pkg . --targets node20-win-x64 --output YuzuLOL.exe"
+  },
+  "dependencies": {
+    "qrcode-terminal": "^0.12.0",
+    "ws": "^8.18.0"
+  },
+  "bin": "server/index.js",
+  "pkg": {
+    "assets": [
+      "public/**/*"
+    ],
+    "scripts": [
+      "node_modules/qrcode-terminal/vendor/**/*.js"
+    ]
+  }
+}

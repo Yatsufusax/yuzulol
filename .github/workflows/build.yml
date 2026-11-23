@@ -1,0 +1,49 @@
+name: Compilar YuzuLOL
+
+# Se ejecuta solo al subir cambios, o a mano desde la pestaña "Actions" > "Run workflow".
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  exe-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Instalar y compilar el .exe
+        working-directory: lol-companion
+        run: |
+          npm install
+          npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: YuzuLOL-exe
+          path: lol-companion/YuzuLOL.exe
+
+  apk-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: android-actions/setup-android@v3
+      - name: Crear el proyecto Android
+        working-directory: lol-companion/android-app
+        run: |
+          npm install
+          npx cap add android
+          # El escáner de QR necesita Android 6 (API 23) como mínimo
+          sed -i 's/minSdkVersion = 2[0-9]/minSdkVersion = 23/' android/variables.gradle
+          npx cap sync android
+      - name: Compilar el APK
+        working-directory: lol-companion/android-app/android
+        run: ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: YuzuLOL-apk
+          path: lol-companion/android-app/android/app/build/outputs/apk/debug/app-debug.apk
